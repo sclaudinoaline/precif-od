@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precificação Odontológica</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f8f9fa;--bg3:#f1f3f5;
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --blue:#1a56a0;--blue-light:#e3f0fb;--blue-mid:#b5d4f4;
+  --green:#166534;--green-bg:#dcfce7;--green-border:#bbf7d0;
+  --red:#991b1b;--red-bg:#fee2e2;--red-border:#fecaca;
+  --radius:8px;--radius-lg:12px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#111827;--bg2:#1f2937;--bg3:#0f172a;
+    --text:#f9fafb;--text2:#9ca3af;--text3:#6b7280;
+    --border:#374151;--border2:#4b5563;
+    --blue:#60a5fa;--blue-light:#1e3a5f;--blue-mid:#1e3a5f;
+    --green:#4ade80;--green-bg:#14532d;--green-border:#166534;
+    --red:#f87171;--red-bg:#450a0a;--red-border:#7f1d1d;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:245px;min-width:245px;background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.sb-header{padding:18px 16px 12px;border-bottom:1px solid var(--border)}
+.sb-logo{display:flex;align-items:center;gap:8px}
+.sb-logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.sb-logo-text{font-size:14px;font-weight:600;color:var(--text)}
+.sb-logo-sub{font-size:11px;color:var(--text3)}
+.sb-section{padding:10px 0}
+.sb-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:0 14px 5px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--text2);border-left:2px solid transparent;transition:all .12s}
+.sb-item:hover{background:var(--bg2);color:var(--text)}
+.sb-item.active{background:var(--blue-light);color:var(--blue);border-left-color:var(--blue);font-weight:500}
+.sb-item svg{width:16px;height:16px;flex-shrink:0}
+.sb-proc-top{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 2px}
+/* Sort pills inside sidebar */
+.sort-pills{padding:4px 10px 6px;display:flex;gap:3px;flex-wrap:wrap}
+.sp{font-size:10px;padding:3px 7px;border-radius:99px;border:1px solid var(--border2);background:none;color:var(--text3);cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap;line-height:1.4}
+.sp:hover{background:var(--bg2);color:var(--text2)}
+.sp.on{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid);font-weight:600}
+/* Proc list */
+.proc-scroll{flex:1;overflow-y:auto;border-top:1px solid var(--border)}
+.proc-item{display:flex;align-items:center;padding:8px 14px;cursor:pointer;font-size:12px;color:var(--text2);border-left:2px solid transparent;gap:6px}
+.proc-item:hover{background:var(--bg2);color:var(--text)}
+.proc-item.active{background:var(--blue-light);color:var(--blue);border-left-color:var(--blue);font-weight:500}
+.proc-item-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proc-item-meta{font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+.proc-item.active .proc-item-meta{color:var(--blue);opacity:.7}
+.proc-del{opacity:0;background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;border-radius:4px;line-height:1;flex-shrink:0}
+.proc-item:hover .proc-del{opacity:1}
+.proc-del:hover{color:var(--red)}
+.sb-add{margin:10px 12px 14px;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px dashed var(--border2);border-radius:var(--radius);font-size:12px;color:var(--text2);cursor:pointer;background:none;width:calc(100% - 24px);font-family:inherit;transition:all .12s}
+.sb-add:hover{background:var(--bg2);color:var(--text)}
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--bg);border-bottom:1px solid var(--border);min-height:48px;gap:12px}
+.tabs{display:flex;height:48px}
+.tab{display:flex;align-items:center;padding:0 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;gap:6px;transition:all .12s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.tab svg{width:14px;height:14px}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.save-indicator{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.save-indicator.saved{color:#16a34a}
+/* Content */
+.content{flex:1;overflow-y:auto;padding:24px;background:var(--bg3)}
+.panel{display:none}
+.panel.active{display:block}
+/* Cards */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+/* Forms */
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:500;color:var(--text2)}
+.field input,.field select{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit;width:100%;transition:border .12s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,160,.1)}
+.field input[type=number]{-moz-appearance:textfield}
+.field input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+/* Proc header */
+.proc-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.proc-name-input{flex:1;background:none;border:none;font-size:20px;font-weight:600;color:var(--text);font-family:inherit;padding:0}
+.proc-name-input:focus{outline:none}
+/* Price */
+.price-big{font-size:28px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.price-input-wrap{position:relative}
+.price-input-wrap .prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text2);pointer-events:none}
+.price-input-wrap input{padding-left:32px;font-size:22px;font-weight:600;background:var(--bg2);height:52px;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:inherit;width:100%}
+.price-input-wrap input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,160,.1)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:500;margin-top:8px}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge-blue{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid)}
+.badge-gray{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+/* Lucro */
+.lucro-card{border-radius:var(--radius-lg);padding:16px;border:1px solid}
+.lucro-card.pos{background:var(--green-bg);border-color:var(--green-border)}
+.lucro-card.neg{background:var(--red-bg);border-color:var(--red-border)}
+.lucro-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.lucro-card.pos .lucro-label{color:var(--green)}
+.lucro-card.neg .lucro-label{color:var(--red)}
+.lucro-value{font-size:30px;font-weight:600;font-variant-numeric:tabular-nums}
+.lucro-card.pos .lucro-value{color:var(--green)}
+.lucro-card.neg .lucro-value{color:var(--red)}
+.lucro-sub{font-size:12px;margin-top:4px}
+.lucro-card.pos .lucro-sub{color:var(--green)}
+.lucro-card.neg .lucro-sub{color:var(--red)}
+/* Breakdown */
+.breakdown-row{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border)}
+.breakdown-row:last-child{border:none;font-weight:600;color:var(--text);font-size:13px;margin-top:2px}
+/* Tables */
+table.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 8px 8px 0;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;transition:color .12s}
+.data-table th:hover{color:var(--text2)}
+.data-table th.sort-asc::after{content:" ↑";color:var(--blue)}
+.data-table th.sort-desc::after{content:" ↓";color:var(--blue)}
+.data-table td{padding:6px 8px 6px 0;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table td input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;color:var(--text);width:100%;font-family:inherit}
+.data-table td input:focus{outline:none;border-color:var(--blue)}
+.table-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;border-top:1px solid var(--border2);margin-top:6px}
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar-search{position:relative;flex:1;min-width:160px}
+.toolbar-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text3);pointer-events:none}
+.toolbar-search input{width:100%;padding:7px 10px 7px 30px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;color:var(--text);font-family:inherit}
+.toolbar-search input:focus{outline:none;border-color:var(--blue)}
+.sort-group{display:flex;gap:6px;align-items:center}
+.sort-group label{font-size:11px;color:var(--text3);white-space:nowrap}
+.sort-select{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 10px;font-size:12px;color:var(--text);font-family:inherit;cursor:pointer}
+.sort-select:focus{outline:none;border-color:var(--blue)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius);font-size:13px;font-family:inherit;cursor:pointer;border:1px solid;transition:all .12s;font-weight:500}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{background:var(--bg);color:var(--text);border-color:var(--border2)}
+.btn-secondary:hover{background:var(--bg2)}
+.btn-ghost{background:none;color:var(--text2);border:1px dashed var(--border2)}
+.btn-ghost:hover{background:var(--bg2);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{background:none;border:none;cursor:pointer;color:var(--text3);padding:5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;transition:all .12s}
+.btn-icon:hover{background:var(--bg2);color:var(--text)}
+.btn-icon.danger:hover{background:var(--red-bg);color:var(--red)}
+.btn-icon svg{width:15px;height:15px}
+/* Metrics */
+.metric-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.metric{background:var(--bg2);border-radius:var(--radius);padding:12px 16px;flex:1;min-width:140px}
+.metric-label{font-size:11px;color:var(--text3);margin-bottom:3px}
+.metric-value{font-size:18px;font-weight:600;color:var(--text)}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:2px}
+/* Insumos library */
+.insumo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:4px}
+.insumo-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all .12s;position:relative}
+.insumo-card:hover{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,160,.08)}
+.insumo-card-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.insumo-card-detail{font-size:11px;color:var(--text3)}
+.insumo-card-price{font-size:13px;font-weight:600;color:var(--blue);margin-top:6px}
+.insumo-card-del{position:absolute;top:8px;right:8px;opacity:0;background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;border-radius:4px}
+.insumo-card:hover .insumo-card-del{opacity:1}
+.insumo-card-del:hover{color:var(--red)}
+/* Config */
+.desp-row{display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.desp-row input{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit;width:100%}
+.desp-row input:focus{outline:none;border-color:var(--blue)}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--radius-lg);padding:24px;width:500px;max-width:95vw;border:1px solid var(--border);max-height:92vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text)}
+/* AI */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.loading-dot{animation:pulse 1.2s ease-in-out infinite;display:inline-block;width:6px;height:6px;background:var(--blue);border-radius:50%;margin:0 2px}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+.ai-result-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-top:14px;font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap}
+.hint{font-size:11px;color:var(--text3);margin-top:4px}
+.divider{height:1px;background:var(--border);margin:20px 0}
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty svg{width:36px;height:36px;margin:0 auto 12px;display:block;opacity:.4}
+.empty p{font-size:13px;margin-bottom:12px}
+@media(max-width:768px){
+  .app{flex-direction:column;height:auto}
+  .sidebar{width:100%;min-width:unset;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .proc-scroll{max-height:140px}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="12" y1="7" x2="12" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="sb-logo-text">Precificação</div>
+          <div class="sb-logo-sub">Odontológica</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Módulos</div>
+      <div class="sb-item active" id="nav-calc" onclick="switchNav('calc')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+        Calculadora
+      </div>
+      <div class="sb-item" id="nav-insumos" onclick="switchNav('insumos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        Biblioteca de insumos
+      </div>
+      <div class="sb-item" id="nav-config" onclick="switchNav('config')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configurações
+      </div>
+    </div>
+    <!-- Procedures + sort -->
+    <div class="sb-proc-top">
+      <div class="sb-label" style="padding:0">Procedimentos</div>
+    </div>
+    <div class="sort-pills">
+      <button class="sp on" id="psort-manual" onclick="setProcSort('manual')">Padrão</button>
+      <button class="sp" id="psort-az" onclick="setProcSort('az')">A→Z</button>
+      <button class="sp" id="psort-za" onclick="setProcSort('za')">Z→A</button>
+      <button class="sp" id="psort-preco-desc" onclick="setProcSort('preco-desc')">Preço ↓</button>
+      <button class="sp" id="psort-preco-asc" onclick="setProcSort('preco-asc')">Preço ↑</button>
+      <button class="sp" id="psort-lucro-desc" onclick="setProcSort('lucro-desc')">Lucro ↓</button>
+      <button class="sp" id="psort-lucro-asc" onclick="setProcSort('lucro-asc')">Lucro ↑</button>
+    </div>
+    <div class="proc-scroll" id="proc-list"></div>
+    <button class="sb-add" onclick="addProc()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo procedimento
+    </button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="tabs">
+        <div class="tab active" id="tab-calc" onclick="switchTab('calc')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="10" x2="8" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="16" y1="12" x2="16" y2="16"/></svg>
+          Calculadora
+        </div>
+        <div class="tab" id="tab-ai" onclick="switchTab('ai')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 8v4l3 3"/></svg>
+          Análise IA
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="save-indicator saved" id="save-indicator">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+          Salvo
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="exportData()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exportar
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Importar
+        </button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="panel active" id="panel-calc"><div id="calc-content"></div></div>
+
+      <div class="panel" id="panel-ai">
+        <div class="card">
+          <div class="card-title">Assistente de inteligência artificial</div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Selecione um procedimento na barra lateral e escolha o tipo de análise.</p>
+          <div style="margin-bottom:12px">
+            <div class="field">
+              <label>Chave de API da Anthropic</label>
+              <input type="password" id="api-key-input" placeholder="sk-ant-...">
+            </div>
+            <p class="hint">Salva apenas no seu navegador. Obtenha em <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a></p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="runAI('margem')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Analisar margem financeira
+            </button>
+            <button class="btn btn-secondary" onclick="runAI('venda')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Gerar argumento de venda
+            </button>
+          </div>
+          <div id="ai-result-area"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-insumos">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Biblioteca de insumos</div>
+            <button class="btn btn-primary btn-sm" onclick="openNewInsumoModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo insumo
+            </button>
+          </div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Cadastre insumos uma vez e reutilize em qualquer procedimento.</p>
+          <div class="toolbar">
+            <div class="toolbar-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="insumo-search" placeholder="Buscar nome, categoria ou fornecedor..." oninput="renderInsumos()">
+            </div>
+            <div class="sort-group">
+              <label>Ordenar:</label>
+              <select id="insumo-sort" class="sort-select" onchange="renderInsumos()">
+                <option value="az">Nome A→Z</option>
+                <option value="za">Nome Z→A</option>
+                <option value="cat">Categoria A→Z</option>
+                <option value="preco-asc">Preço embalagem ↑</option>
+                <option value="preco-desc">Preço embalagem ↓</option>
+                <option value="custo-asc">Custo/proc ↑</option>
+                <option value="custo-desc">Custo/proc ↓</option>
+              </select>
+            </div>
+          </div>
+          <div id="insumos-grid"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-config"><div id="config-content"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal insumo -->
+<div class="modal-bg" id="modal-insumo">
+  <div class="modal">
+    <h3 id="modal-insumo-title">Novo insumo</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="field" style="grid-column:span 2"><label>Nome do insumo</label><input id="mi-nome" placeholder="Ex: Resina composta A2"></div>
+      <div class="field"><label>Categoria</label>
+        <select id="mi-cat" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit">
+          <option>Resinas e cimentos</option><option>Descartáveis</option><option>Anestésicos</option>
+          <option>Periodontia</option><option>Implantodontia</option><option>Endodontia</option>
+          <option>Radiologia</option><option>Higiene e limpeza</option><option>Outros</option>
+        </select>
+      </div>
+      <div class="field"><label>Fornecedor</label><input id="mi-fornecedor" placeholder="Opcional"></div>
+      <div class="field"><label>Valor da embalagem (R$)</label><input id="mi-emb" type="number" step="0.01" placeholder="0,00"></div>
+      <div class="field"><label>Quantidade na embalagem</label><input id="mi-qtd" type="number" step="0.1" placeholder="0"></div>
+      <div class="field"><label>Unidade</label>
+        <select id="mi-unidade" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit">
+          <option>un</option><option>ml</option><option>g</option><option>kg</option><option>cápsulas</option><option>pontas</option>
+        </select>
+      </div>
+      <div class="field"><label>Uso típico por procedimento</label><input id="mi-uso" type="number" step="0.1" placeholder="Ex: 1 = uma unidade"></div>
+    </div>
+    <div id="mi-custo-preview" style="font-size:12px;color:var(--text2);margin-bottom:16px;background:var(--bg2);padding:8px 12px;border-radius:var(--radius);min-height:32px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('modal-insumo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveInsumo()">Salvar insumo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal adicionar da biblioteca -->
+<div class="modal-bg" id="modal-add-insumo">
+  <div class="modal" style="width:600px">
+    <h3>Adicionar da biblioteca</h3>
+    <div class="toolbar" style="margin-top:12px">
+      <div class="toolbar-search" style="flex:1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="add-insumo-search" placeholder="Buscar..." oninput="renderAddInsumoList()">
+      </div>
+      <div class="sort-group">
+        <label>Ordenar:</label>
+        <select id="add-insumo-sort" class="sort-select" onchange="renderAddInsumoList()">
+          <option value="az">Nome A→Z</option>
+          <option value="za">Nome Z→A</option>
+          <option value="cat">Categoria</option>
+          <option value="custo-asc">Custo/proc ↑</option>
+          <option value="custo-desc">Custo/proc ↓</option>
+        </select>
+      </div>
+    </div>
+    <div id="add-insumo-list" style="max-height:340px;overflow-y:auto;margin:4px 0 16px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-insumo')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY='poly-odonto-v3';
+
+function defaultState(){
+  return{
+    currentProc:0, procSort:'manual',
+    config:{
+      despesas:[
+        {nome:'Aluguel',valor:3500},{nome:'Folha de pagamento',valor:8000},
+        {nome:'Materiais gerais',valor:1200},{nome:'Marketing',valor:800},{nome:'Contador / Taxas',valor:600}
+      ],
+      diasMes:22,horasDia:8,ocupacao:75,impostos:6,cartao:3,comissao:30,lucroAlvo:20
+    },
+    insumos:[
+      {id:'i1',nome:'Resina composta A2',cat:'Resinas e cimentos',fornecedor:'FGM',embalagem:65,qtdEmb:4,unidade:'g',usoTipico:0.5},
+      {id:'i2',nome:'Kit descartável',cat:'Descartáveis',fornecedor:'',embalagem:90,qtdEmb:50,unidade:'un',usoTipico:1},
+      {id:'i3',nome:'Ácido fosfórico 37%',cat:'Resinas e cimentos',fornecedor:'',embalagem:28,qtdEmb:2,unidade:'ml',usoTipico:0.3},
+      {id:'i4',nome:'Anestésico tubete',cat:'Anestésicos',fornecedor:'DFL',embalagem:95,qtdEmb:50,unidade:'un',usoTipico:1.5}
+    ],
+    procedimentos:[
+      {id:'p1',nome:'Restauração em resina',duracao:60,precoVenda:0,
+       materiais:[
+         {insId:'i1',nome:'Resina composta A2',embalagem:65,qtdEmb:4,uso:0.5,unidade:'g'},
+         {insId:'i2',nome:'Kit descartável',embalagem:90,qtdEmb:50,uso:1,unidade:'un'}
+       ]}
+    ]
+  };
+}
+
+let state=loadState(), editingInsumoId=null, saveTimeout=null;
+let matSort={col:null,dir:'asc'};
+
+function loadState(){
+  try{const r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r);}catch(e){}
+  return defaultState();
+}
+function saveState(){
+  clearTimeout(saveTimeout);
+  const ind=document.getElementById('save-indicator');
+  if(ind){ind.className='save-indicator';ind.innerHTML='<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>';}
+  saveTimeout=setTimeout(()=>{
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+      if(ind){ind.className='save-indicator saved';ind.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg> Salvo';}
+    }catch(e){showToast('Erro ao salvar');}
+  },600);
+}
+
+function fmt(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);}
+function fmtN(v,d=1){return(+(v||0)).toFixed(d);}
+function uid(){return'id_'+Math.random().toString(36).slice(2);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function calcBase(){
+  const c=state.config;
+  const totalFixo=c.despesas.reduce((s,d)=>s+(+d.valor||0),0);
+  const minutosTotais=c.diasMes*c.horasDia*60;
+  const minutosProdu=minutosTotais*(c.ocupacao/100);
+  const custoMinuto=minutosProdu>0?totalFixo/minutosProdu:0;
+  return{totalFixo,minutosTotais,minutosProdu,custoMinuto};
+}
+function calcProc(proc){
+  const base=calcBase(),c=state.config;
+  const custoMat=proc.materiais.reduce((s,m)=>s+((+m.embalagem||0)/(+m.qtdEmb||1))*(+m.uso||0),0);
+  const custoTempo=(+proc.duracao||0)*base.custoMinuto;
+  const custoTotal=custoMat+custoTempo;
+  const pct=((+c.impostos||0)+(+c.cartao||0)+(+c.comissao||0)+(+c.lucroAlvo||0))/100;
+  const precoSugerido=pct<1?custoTotal/(1-pct):custoTotal;
+  const precoVenda=+proc.precoVenda>0?+proc.precoVenda:precoSugerido;
+  const impostos=precoVenda*(+c.impostos||0)/100;
+  const cartao=precoVenda*(+c.cartao||0)/100;
+  const comissao=precoVenda*(+c.comissao||0)/100;
+  const lucroLiq=precoVenda-custoMat-custoTempo-impostos-cartao-comissao;
+  const margemLiq=precoVenda>0?(lucroLiq/precoVenda)*100:0;
+  const diffPct=precoSugerido>0?((precoVenda-precoSugerido)/precoSugerido)*100:0;
+  return{custoMat,custoTempo,custoTotal,precoSugerido,precoVenda,impostos,cartao,comissao,lucroLiq,margemLiq,diffPct};
+}
+function insumoCusto(ins){return((+ins.embalagem||0)/(+ins.qtdEmb||1))*(+ins.usoTipico||0);}
+
+/* ── SORT HELPERS ── */
+function sortedProcs(){
+  const procs=state.procedimentos.map((p,i)=>({...p,_origIdx:i}));
+  const s=state.procSort||'manual';
+  if(s==='manual')return procs;
+  return procs.sort((a,b)=>{
+    if(s==='az')return a.nome.localeCompare(b.nome,'pt');
+    if(s==='za')return b.nome.localeCompare(a.nome,'pt');
+    const ra=calcProc(a),rb=calcProc(b);
+    if(s==='preco-asc')return ra.precoVenda-rb.precoVenda;
+    if(s==='preco-desc')return rb.precoVenda-ra.precoVenda;
+    if(s==='lucro-asc')return ra.lucroLiq-rb.lucroLiq;
+    if(s==='lucro-desc')return rb.lucroLiq-ra.lucroLiq;
+    return 0;
+  });
+}
+function sortedInsumos(list,sv){
+  return[...list].sort((a,b)=>{
+    if(sv==='az')return a.nome.localeCompare(b.nome,'pt');
+    if(sv==='za')return b.nome.localeCompare(a.nome,'pt');
+    if(sv==='cat')return(a.cat||'').localeCompare(b.cat||'','pt')||a.nome.localeCompare(b.nome,'pt');
+    if(sv==='preco-asc')return(+a.embalagem||0)-(+b.embalagem||0);
+    if(sv==='preco-desc')return(+b.embalagem||0)-(+a.embalagem||0);
+    if(sv==='custo-asc')return insumoCusto(a)-insumoCusto(b);
+    if(sv==='custo-desc')return insumoCusto(b)-insumoCusto(a);
+    return 0;
+  });
+}
+function sortedMats(mats){
+  if(!matSort.col)return mats.map((m,i)=>({...m,_i:i}));
+  return mats.map((m,i)=>({...m,_i:i})).sort((a,b)=>{
+    let va,vb;
+    if(matSort.col==='nome'){va=a.nome||'';vb=b.nome||'';}
+    else if(matSort.col==='custo'){va=((+a.embalagem||0)/(+a.qtdEmb||1))*(+a.uso||0);vb=((+b.embalagem||0)/(+b.qtdEmb||1))*(+b.uso||0);}
+    else if(matSort.col==='embalagem'){va=+a.embalagem||0;vb=+b.embalagem||0;}
+    else if(matSort.col==='uso'){va=+a.uso||0;vb=+b.uso||0;}
+    else return 0;
+    const r=typeof va==='string'?va.localeCompare(vb,'pt'):va-vb;
+    return matSort.dir==='asc'?r:-r;
+  });
+}
+function setProcSort(s){
+  state.procSort=s;
+  document.querySelectorAll('.sp').forEach(el=>el.classList.remove('on'));
+  document.getElementById('psort-'+s)?.classList.add('on');
+  renderProcList();
+}
+function toggleMatSort(col){
+  if(matSort.col===col)matSort.dir=matSort.dir==='asc'?'desc':'asc';
+  else{matSort.col=col;matSort.dir='asc';}
+  renderCalc();
+}
+
+/* ── NAV ── */
+let currentNav='calc',currentTab='calc';
+function switchNav(nav){
+  currentNav=nav;
+  ['calc','insumos','config'].forEach(n=>document.getElementById('nav-'+n)?.classList.toggle('active',n===nav));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  if(nav==='insumos'){document.getElementById('panel-insumos').classList.add('active');renderInsumos();}
+  else if(nav==='config'){document.getElementById('panel-config').classList.add('active');renderConfig();}
+  else switchTab(currentTab);
+}
+function switchTab(tab){
+  currentTab=tab;
+  ['calc','ai'].forEach(t=>{
+    document.getElementById('tab-'+t)?.classList.toggle('active',t===tab);
+    document.getElementById('panel-'+t)?.classList.toggle('active',t===tab);
+  });
+  ['config','insumos'].forEach(n=>document.getElementById('panel-'+n)?.classList.remove('active'));
+  currentNav='calc';
+  ['calc','insumos','config'].forEach(n=>document.getElementById('nav-'+n)?.classList.remove('active'));
+  document.getElementById('nav-calc')?.classList.add('active');
+  if(tab==='calc')renderCalc();
+  else{const k=localStorage.getItem('poly-api-key')||'';const i=document.getElementById('api-key-input');if(i)i.value=k;}
+}
+
+/* ── PROC LIST ── */
+function renderProcList(){
+  const el=document.getElementById('proc-list');if(!el)return;
+  const sorted=sortedProcs();
+  if(!sorted.length){el.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">Nenhum procedimento</div>';return;}
+  el.innerHTML=sorted.map(p=>{
+    const oi=p._origIdx, r=calcProc(p), s=state.procSort;
+    let meta='';
+    if(s==='preco-asc'||s==='preco-desc')meta=fmt(r.precoVenda);
+    else if(s==='lucro-asc'||s==='lucro-desc')meta=fmt(r.lucroLiq);
+    return`<div class="proc-item${oi===state.currentProc?' active':''}" onclick="selectProc(${oi})">
+      <span class="proc-item-name">${p.nome||'Sem nome'}</span>
+      ${meta?`<span class="proc-item-meta">${meta}</span>`:''}
+      <button class="proc-del btn-icon danger" onclick="event.stopPropagation();deleteProc(${oi})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+function selectProc(i){state.currentProc=i;renderProcList();if(currentNav==='calc')renderCalc();}
+function addProc(){
+  state.procedimentos.push({id:uid(),nome:'Novo procedimento',duracao:45,precoVenda:0,materiais:[]});
+  state.currentProc=state.procedimentos.length-1;
+  saveState();renderProcList();switchNav('calc');renderCalc();
+}
+function deleteProc(i){
+  if(!confirm('Excluir este procedimento?'))return;
+  state.procedimentos.splice(i,1);
+  if(state.currentProc>=state.procedimentos.length)state.currentProc=Math.max(0,state.procedimentos.length-1);
+  saveState();renderProcList();renderCalc();
+}
+
+/* ── CALC ── */
+function renderCalc(){
+  const el=document.getElementById('calc-content');if(!el)return;
+  const proc=state.procedimentos[state.currentProc];
+  if(!proc){
+    el.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>Crie um procedimento para começar</p><button class="btn btn-primary" onclick="addProc()">Criar procedimento</button></div>`;
+    return;
+  }
+  const r=calcProc(proc),base=calcBase();
+  let badge='';
+  if(Math.abs(r.diffPct)<0.1)badge=`<span class="badge badge-gray">Preço ideal sugerido</span>`;
+  else if(r.diffPct>0)badge=`<span class="badge badge-green">↑ Aumento de ${fmtN(r.diffPct)}% sobre o sugerido</span>`;
+  else badge=`<span class="badge badge-blue">↓ Desconto de ${fmtN(Math.abs(r.diffPct))}% sobre o sugerido</span>`;
+
+  const thCls=col=>matSort.col===col?(matSort.dir==='asc'?'sort-asc':'sort-desc'):'';
+  const sorted=sortedMats(proc.materiais);
+  const matsRows=sorted.map(m=>{
+    const i=m._i,custo=((+m.embalagem||0)/(+m.qtdEmb||1))*(+m.uso||0);
+    return`<tr>
+      <td><input value="${m.nome||''}" onchange="updMat(${i},'nome',this.value)" placeholder="Insumo" style="min-width:90px"></td>
+      <td><input value="${m.embalagem||''}" type="number" step="0.01" onchange="updMat(${i},'embalagem',this.value)" style="width:80px"></td>
+      <td><input value="${m.qtdEmb||''}" type="number" step="0.1" onchange="updMat(${i},'qtdEmb',this.value)" style="width:60px"></td>
+      <td><input value="${m.uso||''}" type="number" step="0.1" onchange="updMat(${i},'uso',this.value)" style="width:60px"></td>
+      <td style="text-align:right;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums">${fmt(custo)}</td>
+      <td><button class="btn-icon danger" onclick="delMat(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="proc-header">
+      <input class="proc-name-input" value="${proc.nome||''}" onchange="updProc('nome',this.value)" placeholder="Nome do procedimento">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <label style="font-size:13px;color:var(--text2)">Duração:</label>
+        <input type="number" value="${proc.duracao||45}" onchange="updProc('duracao',this.value)" style="width:70px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 8px;font-size:13px;color:var(--text);font-family:inherit" min="1">
+        <span style="font-size:13px;color:var(--text2)">min</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:4px">${fmt(base.custoMinuto)}/min</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card" style="margin:0">
+        <div class="card-title">Preço sugerido (técnico)</div>
+        <div style="font-size:28px;font-weight:600;font-variant-numeric:tabular-nums">${fmt(r.precoSugerido)}</div>
+        <div class="hint" style="margin-top:6px">Markup baseado na hora clínica real + margens</div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-title">Preço praticado (editável)</div>
+        <div class="price-input-wrap">
+          <span class="prefix">R$</span>
+          <input type="text" id="preco-input"
+            value="${+proc.precoVenda>0?fmtN(+proc.precoVenda,2).replace('.',','):''}"
+            placeholder="${fmtN(r.precoSugerido,2).replace('.',',')}"
+            onfocus="this.select()"
+            onblur="setPrecoVenda(this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+        ${badge}
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px">
+      <div class="lucro-card ${r.lucroLiq>=0?'pos':'neg'}">
+        <div class="lucro-label">${r.lucroLiq>=0?'✓ Lucro líquido':'✗ Prejuízo'}</div>
+        <div class="lucro-value">${fmt(r.lucroLiq)}</div>
+        <div class="lucro-sub">Margem real: ${fmtN(r.margemLiq)}% · Alvo: ${state.config.lucroAlvo}%</div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-title">Composição de custos</div>
+        <div class="breakdown-row"><span>Materiais diretos</span><span>${fmt(r.custoMat)}</span></div>
+        <div class="breakdown-row"><span>Tempo clínico</span><span>${fmt(r.custoTempo)}</span></div>
+        <div class="breakdown-row"><span>Impostos (${state.config.impostos}%)</span><span>${fmt(r.impostos)}</span></div>
+        <div class="breakdown-row"><span>Cartão (${state.config.cartao}%)</span><span>${fmt(r.cartao)}</span></div>
+        <div class="breakdown-row"><span>Comissão (${state.config.comissao}%)</span><span>${fmt(r.comissao)}</span></div>
+        <div class="breakdown-row"><span>Total saídas</span><span>${fmt(r.custoMat+r.custoTempo+r.impostos+r.cartao+r.comissao)}</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Materiais e insumos</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="openAddInsumoModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            Da biblioteca
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="addMatManual()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Manual
+          </button>
+        </div>
+      </div>
+      ${proc.materiais.length?`
+      <table class="data-table">
+        <thead><tr>
+          <th class="${thCls('nome')}" onclick="toggleMatSort('nome')">Insumo</th>
+          <th class="${thCls('embalagem')}" onclick="toggleMatSort('embalagem')">Emb. (R$)</th>
+          <th>Qtd emb.</th>
+          <th class="${thCls('uso')}" onclick="toggleMatSort('uso')">Uso</th>
+          <th class="${thCls('custo')}" onclick="toggleMatSort('custo')" style="text-align:right">Custo efetivo</th>
+          <th></th>
+        </tr></thead>
+        <tbody>${matsRows}</tbody>
+      </table>`:'<p style="font-size:12px;color:var(--text3);text-align:center;padding:20px">Nenhum insumo. Use os botões acima para adicionar.</p>'}
+      <div class="table-footer">
+        <span style="font-size:11px;color:var(--text3)">${proc.materiais.length} insumo(s) · Clique no cabeçalho para ordenar</span>
+        <span style="font-size:13px;font-weight:600">Total materiais: ${fmt(r.custoMat)}</span>
+      </div>
+    </div>`;
+}
+
+function setPrecoVenda(raw){
+  const v=parseFloat((raw||'').replace(/[^0-9,\.]/g,'').replace(',','.'))||0;
+  state.procedimentos[state.currentProc].precoVenda=v;
+  saveState();renderCalc();
+}
+function updProc(key,val){
+  state.procedimentos[state.currentProc][key]=key==='duracao'?(parseFloat(val)||0):val;
+  if(key==='nome')renderProcList();
+  saveState();renderCalc();
+}
+function updMat(i,key,val){
+  state.procedimentos[state.currentProc].materiais[i][key]=key==='nome'?val:(parseFloat(val)||0);
+  saveState();renderCalc();
+}
+function addMatManual(){
+  state.procedimentos[state.currentProc].materiais.push({insId:null,nome:'',embalagem:0,qtdEmb:1,uso:1,unidade:'un'});
+  saveState();renderCalc();
+}
+function delMat(i){
+  state.procedimentos[state.currentProc].materiais.splice(i,1);
+  saveState();renderCalc();
+}
+
+/* ── INSUMOS ── */
+function renderInsumos(){
+  const q=(document.getElementById('insumo-search')?.value||'').toLowerCase();
+  const sv=document.getElementById('insumo-sort')?.value||'az';
+  let list=state.insumos.filter(i=>!q||i.nome.toLowerCase().includes(q)||(i.cat||'').toLowerCase().includes(q)||(i.fornecedor||'').toLowerCase().includes(q));
+  list=sortedInsumos(list,sv);
+  const el=document.getElementById('insumos-grid');if(!el)return;
+  if(!list.length){el.innerHTML='<div class="empty" style="padding:30px"><p>Nenhum insumo encontrado</p></div>';return;}
+  el.innerHTML=`<div class="insumo-grid">${list.map(ins=>{
+    const c=insumoCusto(ins);
+    return`<div class="insumo-card" onclick="editInsumo('${ins.id}')">
+      <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${ins.cat||'Outros'}</div>
+      <div class="insumo-card-name">${ins.nome}</div>
+      <div class="insumo-card-detail">${ins.embalagem?fmt(ins.embalagem)+' / '+ins.qtdEmb+' '+ins.unidade:'—'}</div>
+      ${c>0?`<div class="insumo-card-price">Custo típico: ${fmt(c)}/proc</div>`:''}
+      ${ins.fornecedor?`<div class="insumo-card-detail" style="margin-top:4px">${ins.fornecedor}</div>`:''}
+      <button class="insumo-card-del" onclick="event.stopPropagation();delInsumo('${ins.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function openNewInsumoModal(){
+  editingInsumoId=null;
+  document.getElementById('modal-insumo-title').textContent='Novo insumo';
+  ['mi-nome','mi-fornecedor','mi-emb','mi-qtd','mi-uso'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('mi-custo-preview').textContent='';
+  document.getElementById('modal-insumo').classList.add('open');
+}
+function editInsumo(id){
+  const ins=state.insumos.find(i=>i.id===id);if(!ins)return;
+  editingInsumoId=id;
+  document.getElementById('modal-insumo-title').textContent='Editar insumo';
+  document.getElementById('mi-nome').value=ins.nome||'';
+  document.getElementById('mi-cat').value=ins.cat||'Outros';
+  document.getElementById('mi-fornecedor').value=ins.fornecedor||'';
+  document.getElementById('mi-emb').value=ins.embalagem||'';
+  document.getElementById('mi-qtd').value=ins.qtdEmb||'';
+  document.getElementById('mi-unidade').value=ins.unidade||'un';
+  document.getElementById('mi-uso').value=ins.usoTipico||'';
+  const c=insumoCusto(ins);
+  document.getElementById('mi-custo-preview').textContent=c>0?`Custo efetivo típico: ${fmt(c)} por procedimento`:'';
+  document.getElementById('modal-insumo').classList.add('open');
+}
+function saveInsumo(){
+  const nome=document.getElementById('mi-nome').value.trim();
+  if(!nome){showToast('Informe o nome do insumo');return;}
+  const ins={
+    id:editingInsumoId||uid(),nome,
+    cat:document.getElementById('mi-cat').value,
+    fornecedor:document.getElementById('mi-fornecedor').value.trim(),
+    embalagem:parseFloat(document.getElementById('mi-emb').value)||0,
+    qtdEmb:parseFloat(document.getElementById('mi-qtd').value)||1,
+    unidade:document.getElementById('mi-unidade').value,
+    usoTipico:parseFloat(document.getElementById('mi-uso').value)||0
+  };
+  if(editingInsumoId){const idx=state.insumos.findIndex(i=>i.id===editingInsumoId);if(idx>=0)state.insumos[idx]=ins;}
+  else state.insumos.push(ins);
+  closeModal('modal-insumo');saveState();renderInsumos();showToast('Insumo salvo!');
+}
+function delInsumo(id){
+  if(!confirm('Excluir este insumo?'))return;
+  state.insumos=state.insumos.filter(i=>i.id!==id);
+  saveState();renderInsumos();showToast('Insumo excluído');
+}
+function openAddInsumoModal(){
+  document.getElementById('add-insumo-search').value='';
+  document.getElementById('add-insumo-sort').value='az';
+  renderAddInsumoList();
+  document.getElementById('modal-add-insumo').classList.add('open');
+}
+function renderAddInsumoList(){
+  const q=(document.getElementById('add-insumo-search')?.value||'').toLowerCase();
+  const sv=document.getElementById('add-insumo-sort')?.value||'az';
+  let list=state.insumos.filter(i=>!q||i.nome.toLowerCase().includes(q)||(i.cat||'').toLowerCase().includes(q));
+  list=sortedInsumos(list,sv);
+  const el=document.getElementById('add-insumo-list');if(!el)return;
+  el.innerHTML=list.map(ins=>{
+    const c=insumoCusto(ins);
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${ins.nome}</div>
+        <div style="font-size:11px;color:var(--text3)">${ins.cat} · ${fmt(ins.embalagem)}/${ins.qtdEmb}${ins.unidade}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:12px">
+        <span style="font-size:12px;color:var(--text2);white-space:nowrap">${c>0?fmt(c):''}</span>
+        <button class="btn btn-primary btn-sm" onclick="addInsToProc('${ins.id}')">Adicionar</button>
+      </div>
+    </div>`;
+  }).join('')||'<p style="font-size:13px;color:var(--text3);text-align:center;padding:20px">Nenhum insumo na biblioteca.</p>';
+}
+function addInsToProc(id){
+  const ins=state.insumos.find(i=>i.id===id);if(!ins)return;
+  const proc=state.procedimentos[state.currentProc];if(!proc)return;
+  proc.materiais.push({insId:ins.id,nome:ins.nome,embalagem:ins.embalagem,qtdEmb:ins.qtdEmb,uso:ins.usoTipico||1,unidade:ins.unidade});
+  saveState();closeModal('modal-add-insumo');renderCalc();showToast(`"${ins.nome}" adicionado!`);
+}
+document.addEventListener('input',e=>{
+  if(['mi-emb','mi-qtd','mi-uso'].includes(e.target.id)){
+    const emb=parseFloat(document.getElementById('mi-emb').value)||0;
+    const qtd=parseFloat(document.getElementById('mi-qtd').value)||1;
+    const uso=parseFloat(document.getElementById('mi-uso').value)||0;
+    const c=(emb/qtd)*uso;
+    const p=document.getElementById('mi-custo-preview');
+    if(p)p.textContent=c>0?`Custo efetivo típico: ${fmt(c)} por procedimento`:'';
+  }
+});
+
+/* ── CONFIG ── */
+function renderConfig(){
+  const c=state.config,base=calcBase();
+  document.getElementById('config-content').innerHTML=`
+    <div class="card">
+      <div class="card-title">Despesas fixas mensais</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase">Descrição</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase">Valor (R$)</span>
+        <span></span>
+      </div>
+      ${c.despesas.map((d,i)=>`<div class="desp-row">
+        <input value="${d.nome||''}" onchange="updDesp(${i},'nome',this.value)" placeholder="Descrição">
+        <input type="number" value="${d.valor||''}" onchange="updDesp(${i},'valor',this.value)" placeholder="0">
+        <button class="btn-icon danger" onclick="delDesp(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addDesp()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar despesa
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-title">Capacidade operacional</div>
+      <div class="grid-3" style="margin:0">
+        <div class="field"><label>Dias de trabalho / mês</label><input type="number" value="${c.diasMes}" onchange="updConfig('diasMes',this.value)"></div>
+        <div class="field"><label>Horas de trabalho / dia</label><input type="number" value="${c.horasDia}" onchange="updConfig('horasDia',this.value)"></div>
+        <div class="field"><label>Taxa de ocupação (%)</label><input type="number" value="${c.ocupacao}" onchange="updConfig('ocupacao',this.value)" min="0" max="100"></div>
+      </div>
+      <p class="hint" style="margin-top:8px">Taxa de ocupação: % do tempo disponível que gera receita efetivamente.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Margens e encargos</div>
+      <div class="grid-4" style="margin:0">
+        <div class="field"><label>Impostos (%)</label><input type="number" step="0.1" value="${c.impostos}" onchange="updConfig('impostos',this.value)"></div>
+        <div class="field"><label>Taxa do cartão (%)</label><input type="number" step="0.1" value="${c.cartao}" onchange="updConfig('cartao',this.value)"></div>
+        <div class="field"><label>Comissão dentista (%)</label><input type="number" step="0.1" value="${c.comissao}" onchange="updConfig('comissao',this.value)"></div>
+        <div class="field"><label>Lucro alvo (%)</label><input type="number" step="0.1" value="${c.lucroAlvo}" onchange="updConfig('lucroAlvo',this.value)"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Resumo — hora clínica</div>
+      <div class="metric-row">
+        <div class="metric"><div class="metric-label">Despesa fixa total</div><div class="metric-value">${fmt(base.totalFixo)}</div><div class="metric-sub">por mês</div></div>
+        <div class="metric"><div class="metric-label">Minutos produtivos</div><div class="metric-value">${Math.round(base.minutosProdu)}</div><div class="metric-sub">por mês</div></div>
+        <div class="metric"><div class="metric-label">Custo por minuto</div><div class="metric-value">${fmt(base.custoMinuto)}</div><div class="metric-sub">fixo alocado</div></div>
+        <div class="metric"><div class="metric-label">Custo por hora</div><div class="metric-value">${fmt(base.custoMinuto*60)}</div><div class="metric-sub">hora clínica real</div></div>
+      </div>
+    </div>`;
+}
+function updDesp(i,key,val){state.config.despesas[i][key]=key==='valor'?(parseFloat(val)||0):val;saveState();renderConfig();}
+function addDesp(){state.config.despesas.push({nome:'',valor:0});saveState();renderConfig();}
+function delDesp(i){state.config.despesas.splice(i,1);saveState();renderConfig();}
+function updConfig(key,val){state.config[key]=parseFloat(val)||0;saveState();renderConfig();}
+
+/* ── AI ── */
+async function runAI(tipo){
+  const apiKey=document.getElementById('api-key-input')?.value?.trim();
+  if(!apiKey){showToast('Insira sua chave de API da Anthropic');return;}
+  localStorage.setItem('poly-api-key',apiKey);
+  const proc=state.procedimentos[state.currentProc];
+  if(!proc){showToast('Selecione um procedimento');return;}
+  const r=calcProc(proc),base=calcBase();
+  const area=document.getElementById('ai-result-area');
+  area.innerHTML=`<div class="ai-result-box" style="color:var(--text3)"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span> Analisando...</div>`;
+  let prompt='';
+  if(tipo==='margem'){
+    prompt=`Você é um consultor financeiro especializado em gestão de clínicas odontológicas no Brasil.\n\nAnalise os dados e escreva um relatório em português com:\n1. Avaliação da saúde financeira (2-3 frases)\n2. Três dicas práticas de otimização de margem\n3. Alerta se o preço estiver abaixo do recomendado\n\nProcedimento: ${proc.nome}\nDuração: ${proc.duracao} min\nCusto materiais: ${fmt(r.custoMat)}\nCusto tempo clínico: ${fmt(r.custoTempo)}\nPreço sugerido: ${fmt(r.precoSugerido)}\nPreço praticado: ${fmt(r.precoVenda)}\nLucro líquido: ${fmt(r.lucroLiq)}\nMargem real: ${fmtN(r.margemLiq)}%\nMargem alvo: ${state.config.lucroAlvo}%\nDespesa fixa mensal: ${fmt(base.totalFixo)}\nInsumos: ${proc.materiais.map(m=>m.nome).filter(Boolean).join(', ')||'não informados'}`;
+  }else{
+    prompt=`Você é especialista em comunicação odontológica. Crie um argumento de venda humanizado em português para pacientes que questionam o preço. Valorize biossegurança, materiais e expertise. Máximo 200 palavras.\n\nProcedimento: ${proc.nome}\nDuração: ${proc.duracao} min\nPreço: ${fmt(r.precoVenda)}\nMateriais: ${proc.materiais.map(m=>m.nome).filter(Boolean).join(', ')||'insumos de alta qualidade'}`;
+  }
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+    const data=await resp.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'Sem resposta.';
+    area.innerHTML=`<div class="ai-result-box">${text.replace(/\n/g,'<br>')}</div>`;
+  }catch(e){
+    area.innerHTML=`<div class="ai-result-box" style="color:var(--red)">Erro: ${e.message}. Verifique a chave de API e seus créditos.</div>`;
+  }
+}
+
+/* ── EXPORT/IMPORT ── */
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`poly-precificacao-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);
+  showToast('Arquivo exportado!');
+}
+function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.config||!data.procedimentos)throw new Error('Formato inválido');
+      if(!confirm('Isso substituirá todos os dados atuais. Continuar?'))return;
+      state={...defaultState(),...data};state.currentProc=0;
+      saveState();renderProcList();renderCalc();showToast('Dados importados!');
+    }catch(err){showToast('Erro ao importar: '+err.message);}
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+/* ── INIT ── */
+document.querySelectorAll('.sp').forEach(el=>el.classList.remove('on'));
+document.getElementById('psort-'+(state.procSort||'manual'))?.classList.add('on');
+const savedKey=localStorage.getItem('poly-api-key');
+if(savedKey){const i=document.getElementById('api-key-input');if(i)i.value=savedKey;}
+renderProcList();
+renderCalc();
+</script>
+</body>
+</html>
